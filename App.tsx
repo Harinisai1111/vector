@@ -585,6 +585,15 @@ const SessionView = ({ plan, onFinish, onAbort }: { plan: WorkoutPlan, onFinish:
                     {isChecked && <Icons.Check className="w-5 h-5 text-sky-400" />}
                   </button>
 
+                  <div className="flex-shrink-0">
+                    <img
+                      src={`https://image.pollinations.ai/prompt/${encodeURIComponent((ex.visualTag || ex.name) + ' minimal vector art gym dark bg')}?width=100&height=100&nologo=true`}
+                      alt={ex.name}
+                      className="w-16 h-16 rounded object-cover border border-slate-700 bg-slate-950"
+                      loading="lazy"
+                    />
+                  </div>
+
                   <div className="flex-1 space-y-3">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                       <h4 className="text-lg font-medium text-slate-200">{ex.name}</h4>
@@ -623,6 +632,26 @@ const SessionView = ({ plan, onFinish, onAbort }: { plan: WorkoutPlan, onFinish:
             <Button onClick={() => onFinish(plan)} className="animate-pulse shadow-[0_0_20px_rgba(14,165,233,0.3)]">
               MISSION COMPLETE
             </Button>
+          ) : checkedIndices.length > 0 ? (
+            <div className="flex flex-col gap-3">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  const completedExercises = plan.exercises.filter((_, i) => checkedIndices.includes(i));
+                  const partialPlan = {
+                    ...plan,
+                    exercises: completedExercises,
+                    // Improve: could also scale estimatedCalories
+                  };
+                  onFinish(partialPlan);
+                }}
+              >
+                SAVE PROGRESS ({checkedIndices.length}/{plan.exercises.length})
+              </Button>
+              <Button variant="danger" onClick={onAbort} className="opacity-50 hover:opacity-100">
+                ABORT SESSION
+              </Button>
+            </div>
           ) : (
             <Button variant="danger" onClick={onAbort}>
               ABORT SESSION

@@ -19,8 +19,9 @@ const exerciseSchema: Schema = {
     restSeconds: { type: Type.INTEGER, description: "Rest time in seconds" },
     formGuidance: { type: Type.STRING, description: "Technique cue specifically mentioning the target sub-muscle (e.g., 'Focus on Upper Clavicular fibers')" },
     equipment: { type: Type.STRING, description: "Equipment needed" },
+    visualTag: { type: Type.STRING, description: "Image generation prompt" },
   },
-  required: ["name", "sets", "repsOrDuration", "restSeconds", "formGuidance", "equipment"],
+  required: ["name", "sets", "repsOrDuration", "restSeconds", "formGuidance", "equipment", "visualTag"],
 };
 
 const workoutPlanSchema: Schema = {
@@ -54,13 +55,14 @@ export const generateWorkout = async (
 
     STRICT GENERATION PROTOCOLS:
     1. **SUB-MUSCLE TARGETING**: Do not just give generic exercises. If "Chest" is selected, you MUST provide distinct exercises for the Upper Chest, Middle Chest, and Lower Chest.
-    2. **VOLUME ALLOCATION**: 
-       - Aim for exactly **2 exercises PER SUB-REGION** identified. 
-       - Example: For Chest, 2 exercises for Upper Chest, 2 for Middle/Lower.
-       - Adjust total set count to fit within the ${time} minute limit (e.g., reduce sets to 2 per exercise if needed to fit more variety).
+    2. **VOLUME & PACING (CRITICAL)**: 
+       - You MUST strictly respect the **${time} minute** Time Window.
+       - CALCULATION: Assume avg work time = 45s per set. Total Time = (Sets * (45s + RestSeconds)).
+       - Adjust sets and exercises so the workout fits exactly. It is better to have fewer sets than to run over time.
     3. **EQUIPMENT**: Strictly use '${equipment}'.
-    4. **FORM CUES**: The form guidance must explicitly state which part of the muscle is being biased (e.g., "Elbows tucked to bias Tricep Long Head").
-    5. **METABOLIC ESTIMATION**: Estimate the total calories burned for an average male athlete performing this workout at high intensity.
+    4. **VISUALIZATION**: Provide a 'visualTag' for each exercise. This is a short, descriptive 3-5 word prompt for an AI image generator (e.g., "Cinematic shot of athlete doing dumbbell bench press, gym lighting").
+    5. **FORM CUES**: The form guidance must explicitly state which part of the muscle is being biased.
+    6. **METABOLIC ESTIMATION**: Estimate the total calories burned.
     
     Output strictly valid JSON. No conversational text.
   `;

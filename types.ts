@@ -11,6 +11,7 @@ export interface Exercise {
   restSeconds: number;
   formGuidance: string;
   equipment: string;
+  visualTag: string;
 }
 
 export interface WorkoutPlan {
@@ -23,13 +24,13 @@ export interface WorkoutPlan {
   estimatedCalories: number;
 }
 
-export type AppView = 
-  | 'LANDING' 
+export type AppView =
+  | 'LANDING'
   | 'LOGIN'
-  | 'DASHBOARD' 
-  | 'SETUP_EQUIPMENT' 
-  | 'SETUP_MUSCLES' 
-  | 'SETUP_TIME' 
-  | 'GENERATING' 
-  | 'SESSION' 
+  | 'DASHBOARD'
+  | 'SETUP_EQUIPMENT'
+  | 'SETUP_MUSCLES'
+  | 'SETUP_TIME'
+  | 'GENERATING'
+  | 'SESSION'
   | 'HISTORY';
