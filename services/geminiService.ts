@@ -6,6 +6,7 @@ const getClient = () => {
   if (!apiKey) {
     throw new Error("API Key not found");
   }
+  console.log("Vector Auth: Using Key ending in ...", apiKey.slice(-4));
   return new GoogleGenAI({ apiKey });
 };
 
