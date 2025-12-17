@@ -34,13 +34,13 @@ function VectorApp() {
   // Sync view with auth state
   useEffect(() => {
     if (isLoaded) {
-      if (isSignedIn && view === 'LANDING') {
+      if (isSignedIn && (view === 'LANDING' || view === 'LOGIN')) {
         setView('DASHBOARD');
       } else if (!isSignedIn && view !== 'LANDING' && view !== 'LOGIN') {
         setView('LANDING');
       }
     }
-  }, [isLoaded, isSignedIn]);
+  }, [isLoaded, isSignedIn, view]);
 
   // Load history from Supabase
   useEffect(() => {
@@ -133,6 +133,32 @@ function VectorApp() {
   };
 
   // --- VIEWS ---
+
+  // Enhanced loading check:
+  // 1. Wait for Clerk to load (!isLoaded)
+  // 2. Prevent flash if user is already signed in but effect hasn't fired (isSignedIn && view === 'LANDING')
+  // 3. Detect if we are in a Clerk redirect flow (URL params) to prevent falling back to Landing during verification
+  const isClerkFlow = window.location.search.includes('__clerk_status') ||
+    window.location.search.includes('code=') ||
+    window.location.search.includes('state=');
+
+  if (!isLoaded || (isSignedIn && view === 'LANDING') || (isClerkFlow && !isSignedIn)) {
+    return (
+      <Layout className="flex items-center justify-center">
+        <div className="text-center space-y-6">
+          <div className="relative w-24 h-24 mx-auto">
+            <div className="absolute inset-0 border-t-2 border-sky-500 rounded-full animate-spin"></div>
+            <div className="absolute inset-2 border-r-2 border-slate-700 rounded-full animate-spin decoration-slice" style={{ animationDirection: 'reverse', animationDuration: '3s' }}></div>
+          </div>
+          <div>
+            <h3 className="text-lg font-medium tracking-widest text-slate-200 uppercase animate-pulse">
+              {isClerkFlow ? 'Verifying Security' : 'Initializing System'}
+            </h3>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   if (view === 'LANDING') {
     return (
