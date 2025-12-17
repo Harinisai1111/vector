@@ -1,0 +1,25 @@
+{
+    "name": "Vector",
+    "short_name": "Vector",
+    "description": "Precision Workout Engine",
+    "theme_color": "#020617",
+    "background_color": "#020617",
+    "display": "standalone",
+    "scope": "/",
+    "start_url": "/",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/pwa-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/pwa-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}
