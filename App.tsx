@@ -109,7 +109,7 @@ function VectorApp() {
       setView('SESSION');
     } catch (err) {
       console.error(err);
-      setError("System malfunction. Ensure API connectivity.");
+      setError(err instanceof Error ? err.message : "System malfunction. Ensure API connectivity.");
       setView('DASHBOARD');
     } finally {
       setIsLoading(false);

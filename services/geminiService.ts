@@ -78,35 +78,59 @@ export const generateWorkout = async (
 
   try {
     // Retry logic for 503 errors (Service Unavailable / Overloaded)
-    let retries = 3;
-    let delay = 2000;
+    // Attempt with primary model, then fallback to stable model
+    const modelsToTry = ['gemini-2.5-flash', 'gemini-1.5-flash'];
 
-    let response;
+    let response: any;
+    let lastError;
 
-    while (retries > 0) {
-      try {
-        response = await client.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: prompt,
-          config: {
-            systemInstruction: systemInstruction,
-            responseMimeType: "application/json",
-            responseSchema: workoutPlanSchema,
-            temperature: 0.2,
+    for (const model of modelsToTry) {
+      let retries = 5;
+      let delay = 2000;
+      let breakdown = false;
+
+      while (retries > 0) {
+        try {
+          response = await client.models.generateContent({
+            model: model,
+            contents: prompt,
+            config: {
+              systemInstruction: systemInstruction,
+              responseMimeType: "application/json",
+              responseSchema: workoutPlanSchema,
+              temperature: 0.2,
+            }
+          });
+          break; // Success
+        } catch (err: any) {
+          lastError = err;
+          const isOverloaded = err.status === 503 || err.message?.includes('503');
+
+          if (isOverloaded && retries > 1) {
+            console.warn(`Vector System: Model ${model} Overloaded (503). Retrying in ${delay}ms...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            delay *= 1.5; // Backoff
+            retries--;
+          } else if (isOverloaded && retries === 1) {
+            // Last retry for this model failed, let it break inner loop to try next model
+            console.warn(`Vector System: Model ${model} failed after retries. Switching to backup channel if available...`);
+            break;
+          } else if (err.status === 429 || err.message?.includes('429')) {
+            throw new Error("Daily AI Generation Limit Reached (Free Tier). Please try again tomorrow.");
+          } else {
+            // If it's a non-retriable error, we might still want to try the other model IF it's a model-specific issue, 
+            // but usually strictly 503 or 429 are the transient ones. 
+            // For safety, let's treat other errors as fatal for this model, but maybe try next model?
+            // Actually, usually 400s are prompt issues, so we should throw.
+            throw err;
           }
-        });
-        break; // Success
-      } catch (err: any) {
-        if (err.status === 503 && retries > 1) {
-          console.warn(`Gemini 503 (Overloaded). Retrying in ${delay}ms...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
-          delay *= 2; // Exponential backoff
-          retries--;
-        } else {
-          throw err;
         }
       }
+
+      if (response) break; // If we got a response, don't try the next model
     }
+
+    if (!response && lastError) throw lastError;
 
     const text = response.text;
     if (!text) throw new Error("No response from Gemini");
