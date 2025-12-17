@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vector-app-v1';
+const CACHE_NAME = 'vector-app-v2';
 const urlsToCache = [
     '/',
     '/index.html',
@@ -34,6 +34,18 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+    // Network-First strategy for HTML navigation to ensure we always get the latest version
+    if (event.request.mode === 'navigate') {
+        event.respondWith(
+            fetch(event.request)
+                .catch(() => {
+                    return caches.match(event.request);
+                })
+        );
+        return;
+    }
+
+    // Cache-First strategy for assets (they have hashes in filename)
     event.respondWith(
         caches.match(event.request)
             .then((response) => {
